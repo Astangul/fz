@@ -1,6 +1,7 @@
 import sys
 import types
 import csv
+import os
 
 module = types.ModuleType("rpy2")
 class DummyR:
@@ -27,5 +28,10 @@ def test_generated_files_csv(tmp_path):
     with open(csv_path, newline="") as cf:
         rows = list(csv.DictReader(cf))
     assert len(rows) == 2
+    expected_path = os.path.relpath(os.getcwd(), start=tmp_path)
+    assert rows[0]["path"] == expected_path
+    assert rows[0]["file"].endswith("in_x=1.txt")
     assert rows[0]["x"] == "1"
+    assert rows[1]["path"] == expected_path
+    assert rows[1]["file"].endswith("in_x=2.txt")
     assert rows[1]["x"] == "2"

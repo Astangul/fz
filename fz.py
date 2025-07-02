@@ -62,8 +62,9 @@ class fz:
           sont alors placés dans ces répertoires et ne contiennent plus ces
           variables dans leur nom
         - À la fin de l'exécution, un fichier ``generated_files.csv`` listant
-          les chemins relatifs et les valeurs de variables de chaque scénario
-          est sauvegardé dans le répertoire du fichier d'entrée
+          pour chaque scénario le chemin (``path``) et le nom de fichier
+          (``file``) ainsi que les valeurs de variables est sauvegardé dans le
+          répertoire du fichier d'entrée
         """
         template_text = self._load_jdd(input_file)
         group_vars = list(group_variables) if group_variables else []
@@ -169,28 +170,21 @@ class fz:
 
             print(f"Generated : {out_filename} with {scenario_dict}")
             rel_path = os.path.relpath(out_filename, start=input_dir)
-            scenario_infos.append({"file": rel_path, **scenario_dict})
+            scenario_infos.append({
+                "path": os.path.dirname(rel_path) or ".",
+                "file": os.path.basename(rel_path),
+                **scenario_dict,
+            })
 
         # Write detailed scenario information to CSV
         if scenario_infos:
             csv_file = os.path.join(input_dir, "generated_files.csv")
-            var_names = sorted({k for d in scenario_infos for k in d.keys() if k != "file"})
+            var_names = sorted({k for d in scenario_infos for k in d.keys() if k not in {"path", "file"}})
             with open(csv_file, "w", encoding="utf-8", newline="") as cf:
-                cf.write("file," + ",".join(var_names) + "\n")
+                cf.write("path,file," + ",".join(var_names) + "\n")
                 for info in scenario_infos:
                     row = [info.get(var, "") for var in var_names]
-                    cf.write(",".join([info["file"]] + [str(x) for x in row]) + "\n")
-            print(f"Detailed scenario info written to {csv_file}")
-
-        # Write detailed scenario information to CSV
-        if scenario_infos:
-            csv_file = os.path.join(input_dir, "generated_files.csv")
-            var_names = sorted({k for d in scenario_infos for k in d.keys() if k != "file"})
-            with open(csv_file, "w", encoding="utf-8", newline="") as cf:
-                cf.write("file," + ",".join(var_names) + "\n")
-                for info in scenario_infos:
-                    row = [info.get(var, "") for var in var_names]
-                    cf.write(",".join([info["file"]] + [str(x) for x in row]) + "\n")
+                    cf.write(",".join([info["path"], info["file"]] + [str(x) for x in row]) + "\n")
             print(f"Detailed scenario info written to {csv_file}")
 
     # --------------------------------------------------------------------------
