@@ -251,6 +251,7 @@ class fz:
           "0"         => .0f  (format entier)
           "0.00"       => .2f  (2 décimales en notation fixe)
           "0.0000"     => .4f  (4 décimales en notation fixe)
+          "0E00"       => .0E  (notation scientifique sans décimale)
           "0.0000E00"  => .4E  (4 décimales en notation scientifique)
         """
         if fallback_str == "0":
@@ -260,9 +261,9 @@ class fz:
             count_zero = len(m_decimal.group(1))
             return f".{count_zero}f"
     
-        m_scient = re.match(r'^0\.(0+)E00$', fallback_str)
+        m_scient = re.match(r'^0(?:\.(0*))?E00$', fallback_str)
         if m_scient:
-            count_zero = len(m_scient.group(1))
+            count_zero = len(m_scient.group(1) or "")
             return f".{count_zero}E"
     
         return ".5E"
